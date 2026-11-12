@@ -67,7 +67,7 @@ class TestFlowUsage(IntegrationTestCase):
 		self.assertEqual(len(chart["data"]["labels"]), _days_in("last 7 days"))
 		self.assertEqual(sum(chart["data"]["datasets"][0]["values"]), 2)
 
-	def test_last_seven_days_matches_the_dashboard_cards(self):
+	def test_last_seven_days_start_where_frappes_last_7_days_timespan_starts(self):
 		make_chat(CLERK, days_ago=7)
 		frappe.set_user(CLERK)
 
