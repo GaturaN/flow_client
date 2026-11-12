@@ -33,6 +33,17 @@ add_to_apps_screen = [
 	}
 ]
 
+standard_navbar_items = [
+	{
+		"item_label": "Show Flow chat icon",
+		"item_type": "Action",
+		"action": "frappe.flow.panel.turnChatIconOn()",
+		"condition": "eval: frappe.flow?.panel?.isChatIconOff?.()",
+		"icon": "message-circle",
+		"is_standard": 1,
+	}
+]
+
 app_include_js = [_flow_panel_asset("flow_panel.js")]
 app_include_css = [_flow_panel_asset("flow_panel.css")]
 
@@ -67,7 +78,10 @@ scheduler_events = {
 	},
 }
 
-after_install = "flow.chat_icon.add_user_switch"
+after_install = [
+	"flow.chat_icon.add_user_switch",
+	"frappe.core.doctype.navbar_settings.navbar_settings.sync_standard_items",
+]
 
 after_migrate = ["flow.assistant.sync_builtin_assistant", "flow.chat_icon.add_user_switch"]
 
