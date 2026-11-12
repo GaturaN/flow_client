@@ -3,6 +3,7 @@ import App from "@/App.vue";
 import { useStore } from "@/store";
 import { readPanelState, writePanelState } from "@/lib/panelState";
 import { ChatIcon } from "@/chatIcon";
+import { saveChatIconSwitch } from "@/api/client";
 import "@/index.css";
 
 const PANEL_WIDTH = 420;
@@ -127,12 +128,35 @@ class FlowPanel {
 	}
 
 	_mountChatIcon() {
-		if (!frappe.boot.flow_show_chat_icon) return;
+		const chatIcon = frappe.boot.flow_chat_icon;
+		if (!chatIcon?.allowed) return;
 		this.chatIcon = new ChatIcon({
 			onOpen: () => this.show(),
-			shortcutLabel: frappe.ui.keys.get_shortcut_label(PANEL_SHORTCUT),
+			onTurnOff: () => (this.store.chatIconWanted.value = false),
+			shortcutLabel: this._shortcutLabel(),
 		});
 		this.chatIcon.setPanelOpen(this.visible);
+		this.chatIcon.setWanted(chatIcon.wanted);
+		this.store.chatIconAllowed.value = true;
+		this.store.chatIconWanted.value = chatIcon.wanted;
+		watch(this.store.chatIconWanted, (wanted) => this._applyChatIconChoice(wanted));
+	}
+
+	_applyChatIconChoice(wanted) {
+		this.chatIcon.setWanted(wanted);
+		saveChatIconSwitch(wanted).then(() =>
+			frappe.ui.toast({
+				message: wanted
+					? __("Chat icon turned on.")
+					: __("Chat icon turned off. Press {0} to open Flow and turn it back on.", [
+							this._shortcutLabel(),
+					  ]),
+			})
+		);
+	}
+
+	_shortcutLabel() {
+		return frappe.ui.keys.get_shortcut_label(PANEL_SHORTCUT);
 	}
 
 	show() {

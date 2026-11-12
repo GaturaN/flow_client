@@ -23,17 +23,17 @@ USER_SWITCH_FIELD = {
 }
 
 
-def shows_chat_icon_to(user: str) -> bool:
-	return (
-		_site_is_migrated_for_chat_icon()
-		and _site_switch_is_on()
-		and _user_switch_is_on(user)
-		and assistant_is_ready()
-	)
+def chat_icon_state_for(user: str) -> dict[str, bool]:
+	allowed = _site_allows_chat_icon()
+	return {"allowed": allowed, "wanted": allowed and _user_switch_is_on(user)}
 
 
 def add_user_switch() -> None:
 	create_custom_fields(USER_SWITCH_FIELD)
+
+
+def _site_allows_chat_icon() -> bool:
+	return _site_is_migrated_for_chat_icon() and _site_switch_is_on() and assistant_is_ready()
 
 
 def _site_is_migrated_for_chat_icon() -> bool:

@@ -15,7 +15,7 @@
   },
   {
    "default": "1",
-   "description": "Shows a chat icon in the bottom-right corner of every Desk page for opening Flow. Each user can turn it off for themselves in My Settings.",
+   "description": "Shows a chat icon in the bottom-right corner of every Desk page for opening Flow. Each user can turn it off for themselves from the icon or the Flow panel.",
    "fieldname": "show_chat_icon",
    "fieldtype": "Check",
    "label": "Show Chat Icon"

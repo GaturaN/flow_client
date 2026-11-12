@@ -9,9 +9,11 @@ from frappe.tests import IntegrationTestCase
 
 from flow.assistant.assistant import ASSISTANT_AGENT_TITLE
 from flow.boot import boot_session
-from flow.chat_icon import USER_SWITCH, add_user_switch, shows_chat_icon_to
+from flow.chat_icon import USER_SWITCH, add_user_switch, chat_icon_state_for
 
 CLERK = "chat-icon-clerk@example.com"
+ALLOWED_AND_WANTED = {"allowed": True, "wanted": True}
+NOT_ALLOWED = {"allowed": False, "wanted": False}
 
 
 class TestChatIconRule(IntegrationTestCase):
@@ -25,42 +27,43 @@ class TestChatIconRule(IntegrationTestCase):
 		frappe.db.rollback()
 
 	def test_shows_when_both_switches_are_on_and_flow_is_ready(self):
-		self.assertTrue(shows_chat_icon_to(CLERK))
+		self.assertEqual(chat_icon_state_for(CLERK), ALLOWED_AND_WANTED)
 
 	def test_shows_on_a_site_that_never_saved_flow_settings(self):
 		frappe.db.delete("Singles", {"doctype": "Flow Settings"})
 
-		self.assertTrue(shows_chat_icon_to(CLERK))
+		self.assertEqual(chat_icon_state_for(CLERK), ALLOWED_AND_WANTED)
+
+	def test_user_who_switched_it_off_keeps_the_panel_toggle(self):
+		frappe.db.set_value("User", CLERK, USER_SWITCH, 0)
+		frappe.set_user(CLERK)
+
+		self.assertEqual(chat_icon_state_for(CLERK), {"allowed": True, "wanted": False})
 
 	def test_hides_when_flow_settings_switches_it_off(self):
 		frappe.db.set_single_value("Flow Settings", "show_chat_icon", 0)
 
-		self.assertFalse(shows_chat_icon_to(CLERK))
-
-	def test_hides_when_the_user_switches_it_off(self):
-		frappe.db.set_value("User", CLERK, USER_SWITCH, 0)
-
-		self.assertFalse(shows_chat_icon_to(CLERK))
+		self.assertEqual(chat_icon_state_for(CLERK), NOT_ALLOWED)
 
 	def test_hides_until_flow_is_set_up(self):
 		frappe.db.delete("Flow Agent", {"name": ASSISTANT_AGENT_TITLE})
 
-		self.assertFalse(shows_chat_icon_to(CLERK))
+		self.assertEqual(chat_icon_state_for(CLERK), NOT_ALLOWED)
 
 	def test_hides_when_the_flow_agent_is_disabled(self):
 		frappe.db.set_value("Flow Agent", ASSISTANT_AGENT_TITLE, "enabled", 0)
 
-		self.assertFalse(shows_chat_icon_to(CLERK))
+		self.assertEqual(chat_icon_state_for(CLERK), NOT_ALLOWED)
 
 	def test_hides_when_the_flow_agents_model_is_disabled(self):
 		model = frappe.db.get_value("Flow Agent", ASSISTANT_AGENT_TITLE, "model")
 		frappe.db.set_value("Flow Model", model, "enabled", 0)
 
-		self.assertFalse(shows_chat_icon_to(CLERK))
+		self.assertEqual(chat_icon_state_for(CLERK), NOT_ALLOWED)
 
 	def test_hides_instead_of_failing_before_the_site_is_migrated(self):
 		with patch("flow.chat_icon.USER_SWITCH", "flow_column_added_by_a_later_migrate"):
-			self.assertFalse(shows_chat_icon_to(CLERK))
+			self.assertEqual(chat_icon_state_for(CLERK), NOT_ALLOWED)
 
 	def test_boot_tells_the_desk_whether_to_show_the_icon(self):
 		frappe.set_user(CLERK)
@@ -68,7 +71,7 @@ class TestChatIconRule(IntegrationTestCase):
 
 		boot_session(bootinfo)
 
-		self.assertIs(bootinfo.flow_show_chat_icon, True)
+		self.assertEqual(bootinfo.flow_chat_icon, ALLOWED_AND_WANTED)
 
 
 class TestUserSwitch(IntegrationTestCase):

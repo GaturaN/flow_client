@@ -34,6 +34,8 @@ const attachments = ref([]);
 const sending = ref(false);
 const loaded = ref(false);
 const fullscreen = ref(false);
+const chatIconAllowed = ref(false);
+const chatIconWanted = ref(false);
 
 // Bumped whenever new content arrives / focus is wanted; views watch & react.
 const scrollTick = ref(0);
@@ -525,6 +527,8 @@ export function useStore() {
 		sending,
 		loaded,
 		fullscreen,
+		chatIconAllowed,
+		chatIconWanted,
 		toolApproval,
 		scrollTick,
 		forceScroll,

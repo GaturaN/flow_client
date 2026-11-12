@@ -89,6 +89,9 @@ export async function uploadFile(file) {
 // metadata; throws (unsupported type, unreadable, …) which surfaces on the chip.
 export const attachFile = (file) => frappe.xcall("flow.api.attach_file", { file });
 
+export const saveChatIconSwitch = (isOn) =>
+	frappe.db.set_value("User", frappe.session.user, "flow_show_chat_icon", isOn ? 1 : 0);
+
 // Extract the human-readable message from a frappe error body.
 export function serverMessage(data) {
 	try {

@@ -14,9 +14,11 @@ const RAISED_SHADOW = "var(--shadow-lg, 0 4px 14px rgba(0, 0, 0, 0.18))";
 const CHAT_BUBBLE = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>`;
 
 export class ChatIcon {
-	constructor({ onOpen, shortcutLabel }) {
+	constructor({ onOpen, onTurnOff, shortcutLabel }) {
 		this.panelIsOpen = false;
 		this.hiddenUntilRefresh = false;
+		this.wanted = false;
+		this.onTurnOff = onTurnOff;
 		this.root = this._buildRoot(onOpen, shortcutLabel);
 		document.body.appendChild(this.root);
 	}
@@ -26,13 +28,23 @@ export class ChatIcon {
 		this._render();
 	}
 
-	_hideUntilRefresh() {
-		this.hiddenUntilRefresh = true;
+	setWanted(wanted) {
+		this.wanted = wanted;
+		this.hiddenUntilRefresh = false;
 		this._render();
 	}
 
+	_hideUntilRefresh() {
+		this.hiddenUntilRefresh = true;
+		this._render();
+		frappe.ui.toast({
+			message: __("Chat icon hidden until you refresh the page."),
+			action: { label: __("Don't show again"), onclick: this.onTurnOff },
+		});
+	}
+
 	_render() {
-		const visible = !this.panelIsOpen && !this.hiddenUntilRefresh;
+		const visible = this.wanted && !this.panelIsOpen && !this.hiddenUntilRefresh;
 		this.root.style.display = visible ? "block" : "none";
 	}
 
