@@ -3,6 +3,8 @@
 
 import frappe
 from frappe.tests import IntegrationTestCase
+from frappe.utils import date_diff
+from frappe.utils.data import get_timespan_date_range
 
 from flow.flow.report.flow_usage.flow_usage import execute
 from flow.tests.usage_records import make_chat, make_user
@@ -62,8 +64,14 @@ class TestFlowUsage(IntegrationTestCase):
 
 		_, _, _, chart, _ = execute({"period": "Last 7 days"})
 
-		self.assertEqual(len(chart["data"]["labels"]), 7)
+		self.assertEqual(len(chart["data"]["labels"]), _days_in("last 7 days"))
 		self.assertEqual(sum(chart["data"]["datasets"][0]["values"]), 2)
+
+	def test_last_seven_days_matches_the_dashboard_cards(self):
+		make_chat(CLERK, days_ago=7)
+		frappe.set_user(CLERK)
+
+		self.assertEqual(_usage_by_user({"period": "Last 7 days"})[CLERK][0], 3)
 
 	def test_runs_started_by_triggers_are_left_out(self):
 		frappe.set_user(CLERK)
@@ -82,3 +90,8 @@ class TestFlowUsage(IntegrationTestCase):
 def _usage_by_user(filters: dict) -> dict[str, tuple[int, int, int, int]]:
 	_, rows, *_ = execute(filters)
 	return {row["user"]: (row["chats"], row["runs"], row["failed_runs"], row["thumbs_down"]) for row in rows}
+
+
+def _days_in(timespan: str) -> int:
+	start, end = get_timespan_date_range(timespan)
+	return date_diff(end, start) + 1

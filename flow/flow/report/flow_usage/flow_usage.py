@@ -8,12 +8,19 @@ from frappe import _
 from frappe.query_builder import Case
 from frappe.query_builder.functions import Count, Date, Sum
 from frappe.utils import add_days, date_diff, formatdate, getdate, nowdate
+from frappe.utils.data import get_timespan_date_range
 
 REPORT_MANAGER_ROLE = "System Manager"
 JUST_ME = "Just me"
-PERIOD_DAYS = {"Last 7 days": 7, "Last 30 days": 30, "Last 90 days": 90}
+PERIOD_TIMESPANS = {
+	"Last 7 days": "last 7 days",
+	"Last 30 days": "last 30 days",
+	"Last 90 days": "last 90 days",
+}
 DEFAULT_PERIOD = "Last 7 days"
 CHAT_SOURCE = "Manual"
+FAILED = "Failed"
+THUMBS_DOWN = "Down"
 USER_COLUMN_WIDTH = 260
 COUNT_COLUMN_WIDTH = 130
 
@@ -37,8 +44,8 @@ def owner_in_scope(filters: frappe._dict) -> str | None:
 
 
 def _first_day_of(period: str | None) -> date:
-	days = PERIOD_DAYS.get(period, PERIOD_DAYS[DEFAULT_PERIOD])
-	return getdate(add_days(nowdate(), 1 - days))
+	start, _ = get_timespan_date_range(PERIOD_TIMESPANS.get(period, PERIOD_TIMESPANS[DEFAULT_PERIOD]))
+	return getdate(start)
 
 
 def _usage_by_user(owner: str | None, since: date) -> list[dict]:
@@ -70,8 +77,8 @@ def _chats_by_user(owner: str | None, since: date) -> dict[str, int]:
 
 def _runs_by_user(owner: str | None, since: date) -> dict[str, dict]:
 	run = frappe.qb.DocType("Flow Run")
-	failed_runs = Sum(Case().when(run.status == "Failed", 1).else_(0))
-	thumbs_down = Sum(Case().when(run.feedback_rating == "Down", 1).else_(0))
+	failed_runs = Sum(Case().when(run.status == FAILED, 1).else_(0))
+	thumbs_down = Sum(Case().when(run.feedback_rating == THUMBS_DOWN, 1).else_(0))
 	query = (
 		frappe.qb.from_(run)
 		.select(
