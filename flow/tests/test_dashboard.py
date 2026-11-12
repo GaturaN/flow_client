@@ -74,6 +74,18 @@ class TestFlowDashboard(IntegrationTestCase):
 		self.assertEqual([chart.chart_name for chart in workspace.charts], [CHART])
 		self.assertIn("Flow Usage", [link.link_to for link in workspace.links if link.link_type == "Report"])
 
+	def test_every_usage_block_names_a_widget_by_the_label_desk_matches_on(self):
+		workspace = frappe.get_doc("Workspace", "Flow")
+		blocks = json.loads(workspace.content)
+
+		self.assertEqual(
+			(
+				[block["data"]["number_card_name"] for block in blocks if block["type"] == "number_card"],
+				[block["data"]["chart_name"] for block in blocks if block["type"] == "chart"],
+			),
+			([card.label for card in workspace.number_cards], [chart.label for chart in workspace.charts]),
+		)
+
 	def test_a_desk_user_sees_the_usage_section_without_the_report_link(self):
 		frappe.set_user(CLERK)
 
