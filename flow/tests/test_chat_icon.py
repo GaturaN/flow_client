@@ -1,13 +1,63 @@
 # Copyright (c) 2026, Frappe Technologies and contributors
 # License: MIT. See LICENSE
 
+from unittest.mock import patch
+
 import frappe
 from frappe.installer import _delete_linked_documents
 from frappe.tests import IntegrationTestCase
 
-from flow.chat_icon import USER_SWITCH, add_user_switch
+from flow.assistant.assistant import ASSISTANT_AGENT_TITLE
+from flow.boot import boot_session
+from flow.chat_icon import USER_SWITCH, add_user_switch, shows_chat_icon_to
 
 CLERK = "chat-icon-clerk@example.com"
+
+
+class TestChatIconRule(IntegrationTestCase):
+	def setUp(self):
+		_make_desk_user(CLERK)
+		_set_up_flow()
+		frappe.db.set_single_value("Flow Settings", "show_chat_icon", 1)
+
+	def tearDown(self):
+		frappe.set_user("Administrator")
+		frappe.db.rollback()
+
+	def test_shows_when_both_switches_are_on_and_flow_is_set_up(self):
+		self.assertTrue(shows_chat_icon_to(CLERK))
+
+	def test_shows_on_a_site_that_never_saved_flow_settings(self):
+		frappe.db.delete("Singles", {"doctype": "Flow Settings"})
+
+		self.assertTrue(shows_chat_icon_to(CLERK))
+
+	def test_hides_when_flow_settings_switches_it_off(self):
+		frappe.db.set_single_value("Flow Settings", "show_chat_icon", 0)
+
+		self.assertFalse(shows_chat_icon_to(CLERK))
+
+	def test_hides_when_the_user_switches_it_off(self):
+		frappe.db.set_value("User", CLERK, USER_SWITCH, 0)
+
+		self.assertFalse(shows_chat_icon_to(CLERK))
+
+	def test_hides_until_flow_is_set_up(self):
+		frappe.db.delete("Flow Agent", {"name": ASSISTANT_AGENT_TITLE})
+
+		self.assertFalse(shows_chat_icon_to(CLERK))
+
+	def test_hides_instead_of_failing_before_the_site_is_migrated(self):
+		with patch("flow.chat_icon.USER_SWITCH", "flow_column_added_by_a_later_migrate"):
+			self.assertFalse(shows_chat_icon_to(CLERK))
+
+	def test_boot_tells_the_desk_whether_to_show_the_icon(self):
+		frappe.set_user(CLERK)
+		bootinfo = frappe._dict()
+
+		boot_session(bootinfo)
+
+		self.assertIs(bootinfo.flow_show_chat_icon, True)
 
 
 class TestUserSwitch(IntegrationTestCase):
@@ -59,3 +109,14 @@ def _make_desk_user(email: str) -> None:
 		}
 	).insert(ignore_permissions=True)
 	user.add_roles("Desk User")
+
+
+def _set_up_flow() -> None:
+	frappe.get_doc(
+		{
+			"doctype": "Flow Model",
+			"title": "Chat Icon Test Model",
+			"model_id": "openai/gpt-4o-mini",
+			"enabled": 1,
+		}
+	).insert()

@@ -99,3 +99,7 @@ def sync_builtin_assistant(model: str | None = None) -> None:
 		if slug not in existing:
 			doc.append("tools", {"tool": slug})
 	doc.save(ignore_permissions=True)
+
+
+def assistant_exists() -> bool:
+	return bool(frappe.db.exists("Flow Agent", ASSISTANT_AGENT_TITLE))

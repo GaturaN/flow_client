@@ -1,7 +1,10 @@
 # Copyright (c) 2026, Frappe Technologies and contributors
 # License: MIT. See LICENSE
 
+import frappe
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
+
+from flow.assistant.assistant import assistant_exists
 
 USER_SWITCH = "flow_show_chat_icon"
 
@@ -20,5 +23,26 @@ USER_SWITCH_FIELD = {
 }
 
 
+def shows_chat_icon_to(user: str) -> bool:
+	return (
+		_site_is_migrated_for_chat_icon()
+		and _site_switch_is_on()
+		and _user_switch_is_on(user)
+		and assistant_exists()
+	)
+
+
 def add_user_switch() -> None:
 	create_custom_fields(USER_SWITCH_FIELD)
+
+
+def _site_is_migrated_for_chat_icon() -> bool:
+	return frappe.db.has_column("User", USER_SWITCH)
+
+
+def _site_switch_is_on() -> bool:
+	return bool(frappe.get_doc("Flow Settings").show_chat_icon)
+
+
+def _user_switch_is_on(user: str) -> bool:
+	return bool(frappe.db.get_value("User", user, USER_SWITCH))
