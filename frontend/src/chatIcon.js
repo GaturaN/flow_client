@@ -34,6 +34,10 @@ export class ChatIcon {
 		this._render();
 	}
 
+	isTurnedOff() {
+		return !this.wanted || this.hiddenUntilRefresh;
+	}
+
 	_hideUntilRefresh() {
 		this.hiddenUntilRefresh = true;
 		this._render();

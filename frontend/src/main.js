@@ -90,14 +90,19 @@ class FlowPanel {
 	_applyChatIconChoice(wanted) {
 		this.chatIcon.setWanted(wanted);
 		saveChatIconSwitch(wanted).then(() =>
-			frappe.ui.toast({
-				message: wanted
-					? __("Chat icon turned on.")
-					: __("Chat icon turned off. Press {0} to open Flow and turn it back on.", [
-							this._shortcutLabel(),
-					  ]),
-			})
+			frappe.ui.toast(
+				wanted ? { message: __("Chat icon turned on.") } : this._turnedOffMessage()
+			)
 		);
+	}
+
+	_turnedOffMessage() {
+		return {
+			message: __(
+				"Chat icon turned off. Bring it back from the menu at the top of the sidebar."
+			),
+			action: { label: __("Undo"), onclick: () => this.turnChatIconOn() },
+		};
 	}
 
 	_shortcutLabel() {
@@ -121,6 +126,17 @@ class FlowPanel {
 
 	toggle() {
 		this.visible ? this.hide() : this.show();
+	}
+
+	isChatIconOff() {
+		return Boolean(this.chatIcon?.isTurnedOff());
+	}
+
+	turnChatIconOn() {
+		if (!this.chatIcon) return;
+		const isAlreadyWanted = this.store.chatIconWanted.value;
+		if (isAlreadyWanted) this.chatIcon.setWanted(true);
+		else this.store.chatIconWanted.value = true;
 	}
 
 	togglePopOut() {
