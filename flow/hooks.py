@@ -23,6 +23,16 @@ def _flow_panel_asset(filename: str) -> str:
 	return f"/assets/flow/flow_panel/{filename}?v={version}"
 
 
+add_to_apps_screen = [
+	{
+		"name": app_name,
+		"logo": "/assets/flow/images/flow-logo.svg",
+		"title": app_title,
+		"route": "/desk/flow",
+		"has_permission": "flow.apps_screen.is_desk_user",
+	}
+]
+
 app_include_js = [_flow_panel_asset("flow_panel.js")]
 app_include_css = [_flow_panel_asset("flow_panel.css")]
 
