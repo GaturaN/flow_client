@@ -33,7 +33,7 @@ const messages = ref([]);
 const attachments = ref([]);
 const sending = ref(false);
 const loaded = ref(false);
-const fullscreen = ref(false);
+const panelPlacement = ref(null);
 const chatIconAllowed = ref(false);
 const chatIconWanted = ref(false);
 
@@ -526,7 +526,7 @@ export function useStore() {
 		attachments,
 		sending,
 		loaded,
-		fullscreen,
+		panelPlacement,
 		chatIconAllowed,
 		chatIconWanted,
 		toolApproval,
