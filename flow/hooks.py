@@ -29,6 +29,7 @@ add_to_apps_screen = [
 		"logo": "/assets/flow/images/flow-logo.svg",
 		"title": app_title,
 		"route": "/desk/flow",
+		"has_permission": "flow.apps_screen.is_desk_user",
 	}
 ]
 

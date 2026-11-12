@@ -6,9 +6,11 @@ from pathlib import Path
 from xml.etree import ElementTree
 
 import frappe
-from frappe.apps import get_apps
+from frappe.apps import get_apps, get_default_path
 from frappe.boot import get_app_data
 from frappe.tests import IntegrationTestCase
+
+from flow.tests.usage_records import make_user
 
 FLOW_TILE = {
 	"name": "flow",
@@ -17,6 +19,7 @@ FLOW_TILE = {
 	"route": "/desk/flow",
 }
 CLERK = "apps-screen-clerk@example.com"
+PORTAL_USER = "apps-screen-portal@example.com"
 
 
 class TestAppsScreen(IntegrationTestCase):
@@ -25,7 +28,7 @@ class TestAppsScreen(IntegrationTestCase):
 		frappe.db.rollback()
 
 	def test_a_desk_user_sees_the_flow_tile_on_the_apps_screen(self):
-		_make_desk_user(CLERK)
+		make_user(CLERK, role="Desk User")
 		frappe.set_user(CLERK)
 
 		flow = next(app for app in _boot_app_data() if app["app_name"] == FLOW_TILE["name"])
@@ -36,10 +39,17 @@ class TestAppsScreen(IntegrationTestCase):
 		)
 
 	def test_a_desk_user_gets_the_flow_tile_from_the_apps_list(self):
-		_make_desk_user(CLERK)
+		make_user(CLERK, role="Desk User")
 		frappe.set_user(CLERK)
 
 		self.assertEqual(_flow_tile_on(_apps_page()), FLOW_TILE)
+
+	def test_a_portal_user_is_never_sent_to_flow(self):
+		_make_website_user(PORTAL_USER)
+		frappe.set_user(PORTAL_USER)
+
+		self.assertIsNone(_flow_tile_on(_apps_page()))
+		self.assertNotEqual(get_default_path(), FLOW_TILE["route"])
 
 	def test_flow_leaves_the_desk_logo_to_other_apps(self):
 		self.assertEqual(frappe.get_hooks("app_logo_url", app_name="flow"), [])
@@ -80,13 +90,13 @@ def _flow_tile_on(apps: list[dict]) -> dict | None:
 	return tile and {key: tile.get(key) for key in FLOW_TILE}
 
 
-def _make_desk_user(email: str) -> None:
-	user = frappe.get_doc(
+def _make_website_user(email: str) -> None:
+	frappe.get_doc(
 		{
 			"doctype": "User",
 			"email": email,
 			"first_name": email.split("@")[0],
+			"user_type": "Website User",
 			"send_welcome_email": 0,
 		}
 	).insert(ignore_permissions=True)
-	user.add_roles("Desk User")
