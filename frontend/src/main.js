@@ -2,6 +2,7 @@ import { createApp, watch } from "vue";
 import App from "@/App.vue";
 import { useStore } from "@/store";
 import { readPanelState, writePanelState } from "@/lib/panelState";
+import { ChatIcon } from "@/chatIcon";
 import "@/index.css";
 
 const PANEL_WIDTH = 420;
@@ -21,6 +22,7 @@ class FlowPanel {
 		this._mount();
 		this._syncTheme();
 		this._registerShortcut();
+		this._mountChatIcon();
 
 		watch(this.store.sessionName, () => this._persist());
 	}
@@ -123,17 +125,25 @@ class FlowPanel {
 		});
 	}
 
+	_mountChatIcon() {
+		if (!frappe.boot.flow_show_chat_icon) return;
+		this.chatIcon = new ChatIcon({ onOpen: () => this.show() });
+		this.chatIcon.setPanelOpen(this.visible);
+	}
+
 	show() {
 		this.visible = true;
 		this.root.style.transform = "translateX(0)";
 		this.store.restoreSession();
 		this._persist();
+		this.chatIcon?.setPanelOpen(true);
 	}
 
 	hide() {
 		this.visible = false;
 		this.root.style.transform = "translateX(100%)";
 		this._persist();
+		this.chatIcon?.setPanelOpen(false);
 	}
 
 	toggle() {
