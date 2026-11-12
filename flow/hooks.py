@@ -57,6 +57,8 @@ scheduler_events = {
 	},
 }
 
-after_migrate = ["flow.assistant.sync_builtin_assistant"]
+after_install = "flow.chat_icon.add_user_switch"
+
+after_migrate = ["flow.assistant.sync_builtin_assistant", "flow.chat_icon.add_user_switch"]
 
 extend_bootinfo = "flow.boot.boot_session"

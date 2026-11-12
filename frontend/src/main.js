@@ -2,10 +2,13 @@ import { createApp, watch } from "vue";
 import App from "@/App.vue";
 import { useStore } from "@/store";
 import { readPanelState, writePanelState } from "@/lib/panelState";
+import { ChatIcon } from "@/chatIcon";
+import { saveChatIconSwitch } from "@/api/client";
 import "@/index.css";
 
 const PANEL_WIDTH = 420;
 const MIN_WIDTH = 360;
+const PANEL_SHORTCUT = "ctrl+i";
 
 // Slide-in overlay panel injected into the Frappe desk. The Vue app (with real
 // frappe-ui components) mounts inside #flow-root; all bundle CSS is scoped to
@@ -21,6 +24,7 @@ class FlowPanel {
 		this._mount();
 		this._syncTheme();
 		this._registerShortcut();
+		this._mountChatIcon();
 
 		watch(this.store.sessionName, () => this._persist());
 	}
@@ -116,11 +120,43 @@ class FlowPanel {
 
 	_registerShortcut() {
 		frappe.ui.keys.add_shortcut({
-			shortcut: "ctrl+i",
+			shortcut: PANEL_SHORTCUT,
 			action: () => this.toggle(),
 			description: __("Toggle Flow panel"),
 			ignore_inputs: true,
 		});
+	}
+
+	_mountChatIcon() {
+		const chatIcon = frappe.boot.flow_chat_icon;
+		if (!chatIcon?.allowed) return;
+		this.chatIcon = new ChatIcon({
+			onOpen: () => this.show(),
+			onTurnOff: () => (this.store.chatIconWanted.value = false),
+			shortcutLabel: this._shortcutLabel(),
+		});
+		this.chatIcon.setPanelOpen(this.visible);
+		this.chatIcon.setWanted(chatIcon.wanted);
+		this.store.chatIconAllowed.value = true;
+		this.store.chatIconWanted.value = chatIcon.wanted;
+		watch(this.store.chatIconWanted, (wanted) => this._applyChatIconChoice(wanted));
+	}
+
+	_applyChatIconChoice(wanted) {
+		this.chatIcon.setWanted(wanted);
+		saveChatIconSwitch(wanted).then(() =>
+			frappe.ui.toast({
+				message: wanted
+					? __("Chat icon turned on.")
+					: __("Chat icon turned off. Press {0} to open Flow and turn it back on.", [
+							this._shortcutLabel(),
+					  ]),
+			})
+		);
+	}
+
+	_shortcutLabel() {
+		return frappe.ui.keys.get_shortcut_label(PANEL_SHORTCUT);
 	}
 
 	show() {
@@ -128,12 +164,14 @@ class FlowPanel {
 		this.root.style.transform = "translateX(0)";
 		this.store.restoreSession();
 		this._persist();
+		this.chatIcon?.setPanelOpen(true);
 	}
 
 	hide() {
 		this.visible = false;
 		this.root.style.transform = "translateX(100%)";
 		this._persist();
+		this.chatIcon?.setPanelOpen(false);
 	}
 
 	toggle() {

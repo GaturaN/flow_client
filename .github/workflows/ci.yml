@@ -63,7 +63,7 @@ jobs:
       - name: Init bench with frappe
         run: |
           bench init frappe-bench \
-            --frappe-branch develop \
+            --frappe-branch version-16 \
             --python python3 \
             --skip-redis-config-generation \
             --verbose
