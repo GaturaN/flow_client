@@ -102,6 +102,10 @@ class TestUserSwitch(IntegrationTestCase):
 
 		self.assertEqual(frappe.db.get_value("User", CLERK, USER_SWITCH), 0)
 
+	def test_install_and_every_migrate_add_the_switch(self):
+		self.assertIn("flow.chat_icon.add_user_switch", frappe.get_hooks("after_install", app_name="flow"))
+		self.assertIn("flow.chat_icon.add_user_switch", frappe.get_hooks("after_migrate", app_name="flow"))
+
 	def test_every_migrate_keeps_a_single_switch(self):
 		add_user_switch()
 
