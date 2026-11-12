@@ -34,6 +34,7 @@ class FlowPanel {
 
 		this.root = document.createElement("div");
 		this.root.id = "flow-root";
+		this.root.style.display = "none";
 		document.body.appendChild(this.root);
 
 		this.app = createApp(App, {

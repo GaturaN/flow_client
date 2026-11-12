@@ -1,6 +1,7 @@
 import {
 	FLOATING_SIZE,
 	PANEL_PLACEMENTS,
+	SMALLEST_DOCKING_VIEWPORT_WIDTH,
 	clampDockedWidth,
 	clampFloatingWindow,
 } from "@/lib/panelLayout";
@@ -17,6 +18,7 @@ const DESK_ITEMS_PINNED_TO_WINDOW_EDGE = [
 	EMAIL_COMPOSER_CARD,
 ];
 const CONTROLS = "button, a, input, textarea, select";
+const PRIMARY_BUTTON = 0;
 const FLOATING_CORNER_RADIUS = "12px";
 const FLOATING_BORDER = "1px solid var(--border-color, #e4e4e7)";
 const FLOATING_SHADOW = "var(--shadow-2xl, 0 12px 40px rgba(0, 0, 0, 0.18))";
@@ -31,7 +33,7 @@ const PLACEMENT_STYLES = {
 	}),
 	[PANEL_PLACEMENTS.FLOATING]: ({ floatingWindow }) => ({
 		position: "fixed",
-		left: `${floatingWindow.left}px`,
+		...edgeOppositeTheResizeGrip(floatingWindow),
 		top: `${floatingWindow.top}px`,
 		width: `${floatingWindow.width}px`,
 		height: `${floatingWindow.height}px`,
@@ -87,10 +89,10 @@ export class PanelFrame {
 	_keepPinnedDeskItemsBesideDockedChat() {
 		const dockedWidth = `var(${DOCKED_WIDTH_VARIABLE}, 0px)`;
 		const style = document.createElement("style");
-		style.textContent = `
-			${DESK_ITEMS_PINNED_TO_WINDOW_EDGE.join(", ")} { margin-right: ${dockedWidth}; }
+		style.textContent = `@media (min-width: ${SMALLEST_DOCKING_VIEWPORT_WIDTH}px) {
+			${DESK_ITEMS_PINNED_TO_WINDOW_EDGE.join(", ")} { margin-inline-end: ${dockedWidth}; }
 			${EMAIL_COMPOSER_CARD} { max-width: calc(100vw - ${EMAIL_COMPOSER_EDGE_GAPS} - ${dockedWidth}); }
-		`;
+		}`;
 		document.head.appendChild(style);
 	}
 
@@ -99,7 +101,7 @@ export class PanelFrame {
 		Object.assign(grip.style, {
 			position: "absolute",
 			top: "0",
-			left: "0",
+			insetInlineStart: "0",
 			width: DOCKED_GRIP_WIDTH,
 			height: "100%",
 			cursor: "ew-resize",
@@ -111,7 +113,7 @@ export class PanelFrame {
 			this._drag(event, (move) => {
 				const viewport = currentViewport();
 				onDockedWidthChange(
-					clampDockedWidth(viewport.width - move.clientX, viewport.width)
+					clampDockedWidth(dockedWidthAt(move.clientX, viewport.width), viewport.width)
 				);
 			})
 		);
@@ -159,6 +161,7 @@ export class PanelFrame {
 	}
 
 	_drag(event, onMove) {
+		if (event.button !== PRIMARY_BUTTON) return;
 		event.preventDefault();
 		event.currentTarget.setPointerCapture(event.pointerId);
 		document.body.style.userSelect = "none";
@@ -179,6 +182,19 @@ function hasSameSize(floatingWindow, otherWindow) {
 		floatingWindow.width === otherWindow?.width &&
 		floatingWindow.height === otherWindow?.height
 	);
+}
+
+function edgeOppositeTheResizeGrip({ left, width }) {
+	if (!isRightToLeft()) return { left: `${left}px` };
+	return { right: `${window.innerWidth - left - width}px` };
+}
+
+function dockedWidthAt(pointerX, viewportWidth) {
+	return isRightToLeft() ? pointerX : viewportWidth - pointerX;
+}
+
+function isRightToLeft() {
+	return document.documentElement.dir === "rtl";
 }
 
 function isWithin(inner, outer) {
