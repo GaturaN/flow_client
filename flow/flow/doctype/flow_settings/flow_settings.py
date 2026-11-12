@@ -3,6 +3,8 @@
 
 from frappe.model.document import Document
 
+from flow.assistant.assistant import assistant_exists
+
 
 class FlowSettings(Document):
 	# begin: auto-generated types
@@ -16,4 +18,5 @@ class FlowSettings(Document):
 		show_chat_icon: DF.Check
 	# end: auto-generated types
 
-	pass
+	def onload(self):
+		self.set_onload("flow_is_set_up", assistant_exists())
