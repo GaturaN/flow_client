@@ -3,12 +3,12 @@
 
 frappe.ui.form.on("Flow Settings", {
 	refresh(frm) {
-		const flow_is_set_up = frm.doc.__onload?.flow_is_set_up;
+		const flow_is_ready = frm.doc.__onload?.flow_is_ready;
 		frm.set_intro(
-			flow_is_set_up
+			flow_is_ready
 				? ""
 				: __(
-						"Flow isn't set up yet, so the chat icon is hidden for everyone. Add an enabled Flow Model and it appears."
+						"Flow isn't ready, so the chat icon is hidden for everyone. The Flow agent and its Flow Model must both be enabled. Saving the first enabled Flow Model creates the agent."
 				  ),
 			"yellow"
 		);

@@ -24,7 +24,7 @@ class TestChatIconRule(IntegrationTestCase):
 		frappe.set_user("Administrator")
 		frappe.db.rollback()
 
-	def test_shows_when_both_switches_are_on_and_flow_is_set_up(self):
+	def test_shows_when_both_switches_are_on_and_flow_is_ready(self):
 		self.assertTrue(shows_chat_icon_to(CLERK))
 
 	def test_shows_on_a_site_that_never_saved_flow_settings(self):
@@ -44,6 +44,17 @@ class TestChatIconRule(IntegrationTestCase):
 
 	def test_hides_until_flow_is_set_up(self):
 		frappe.db.delete("Flow Agent", {"name": ASSISTANT_AGENT_TITLE})
+
+		self.assertFalse(shows_chat_icon_to(CLERK))
+
+	def test_hides_when_the_flow_agent_is_disabled(self):
+		frappe.db.set_value("Flow Agent", ASSISTANT_AGENT_TITLE, "enabled", 0)
+
+		self.assertFalse(shows_chat_icon_to(CLERK))
+
+	def test_hides_when_the_flow_agents_model_is_disabled(self):
+		model = frappe.db.get_value("Flow Agent", ASSISTANT_AGENT_TITLE, "model")
+		frappe.db.set_value("Flow Model", model, "enabled", 0)
 
 		self.assertFalse(shows_chat_icon_to(CLERK))
 

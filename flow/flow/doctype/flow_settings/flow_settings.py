@@ -3,7 +3,7 @@
 
 from frappe.model.document import Document
 
-from flow.assistant.assistant import assistant_exists
+from flow.assistant.assistant import assistant_is_ready
 
 
 class FlowSettings(Document):
@@ -19,4 +19,4 @@ class FlowSettings(Document):
 	# end: auto-generated types
 
 	def onload(self):
-		self.set_onload("flow_is_set_up", assistant_exists())
+		self.set_onload("flow_is_ready", assistant_is_ready())

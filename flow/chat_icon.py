@@ -4,7 +4,7 @@
 import frappe
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 
-from flow.assistant.assistant import assistant_exists
+from flow.assistant.assistant import assistant_is_ready
 
 USER_SWITCH = "flow_show_chat_icon"
 
@@ -28,7 +28,7 @@ def shows_chat_icon_to(user: str) -> bool:
 		_site_is_migrated_for_chat_icon()
 		and _site_switch_is_on()
 		and _user_switch_is_on(user)
-		and assistant_exists()
+		and assistant_is_ready()
 	)
 
 

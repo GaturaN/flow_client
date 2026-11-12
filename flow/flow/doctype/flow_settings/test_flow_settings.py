@@ -27,12 +27,12 @@ class TestFlowSettings(IntegrationTestCase):
 		self.assertTrue(frappe.has_permission("Flow Settings", "write", user=MANAGER))
 		self.assertFalse(frappe.has_permission("Flow Settings", "write", user=CLERK))
 
-	def test_form_knows_flow_is_not_set_up_without_an_enabled_flow_model(self):
+	def test_form_knows_flow_is_not_ready_without_the_flow_agent(self):
 		frappe.db.delete("Flow Agent", {"name": ASSISTANT_AGENT_TITLE})
 
-		self.assertFalse(_flow_is_set_up_on_the_form())
+		self.assertFalse(_flow_is_ready_on_the_form())
 
-	def test_form_knows_flow_is_set_up_once_an_enabled_flow_model_exists(self):
+	def test_form_knows_flow_is_ready_once_an_enabled_flow_model_creates_the_agent(self):
 		frappe.db.delete("Flow Agent", {"name": ASSISTANT_AGENT_TITLE})
 
 		frappe.get_doc(
@@ -44,13 +44,13 @@ class TestFlowSettings(IntegrationTestCase):
 			}
 		).insert()
 
-		self.assertTrue(_flow_is_set_up_on_the_form())
+		self.assertTrue(_flow_is_ready_on_the_form())
 
 
-def _flow_is_set_up_on_the_form() -> bool:
+def _flow_is_ready_on_the_form() -> bool:
 	settings = frappe.get_doc("Flow Settings")
 	settings.run_method("onload")
-	return settings.get_onload("flow_is_set_up")
+	return settings.get_onload("flow_is_ready")
 
 
 def _make_user(email: str, role: str) -> None:
