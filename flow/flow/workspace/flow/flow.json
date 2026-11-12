@@ -1,7 +1,12 @@
 {
  "app": "flow",
- "charts": [],
- "content": "[{\"id\":\"flowHeader1\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Flow</b></span>\",\"col\":12}},{\"id\":\"scAgent0001\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Flow Agent\",\"col\":3}},{\"id\":\"scKnow00001\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Flow Knowledge Base\",\"col\":3}},{\"id\":\"scSession01\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Flow Session\",\"col\":3}},{\"id\":\"scModel0001\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Flow Model\",\"col\":3}},{\"id\":\"flowManage1\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Manage</b></span>\",\"col\":12}},{\"id\":\"cardAgents1\",\"type\":\"card\",\"data\":{\"card_name\":\"Agents\",\"col\":3}},{\"id\":\"cardKnow001\",\"type\":\"card\",\"data\":{\"card_name\":\"Knowledge\",\"col\":3}},{\"id\":\"cardConvo01\",\"type\":\"card\",\"data\":{\"card_name\":\"Conversations\",\"col\":3}},{\"id\":\"cardConfig1\",\"type\":\"card\",\"data\":{\"card_name\":\"Configuration\",\"col\":3}}]",
+ "charts": [
+  {
+   "chart_name": "Flow Runs Per Day",
+   "label": "Chat runs per day"
+  }
+ ],
+ "content": "[{\"id\": \"flowHeader1\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Flow</b></span>\", \"col\": 12}}, {\"id\": \"scAgent0001\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Flow Agent\", \"col\": 3}}, {\"id\": \"scKnow00001\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Flow Knowledge Base\", \"col\": 3}}, {\"id\": \"scSession01\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Flow Session\", \"col\": 3}}, {\"id\": \"scModel0001\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Flow Model\", \"col\": 3}}, {\"id\": \"flowUsage01\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Usage</b></span>\", \"col\": 12}}, {\"id\": \"ncChats0001\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Flow Chats This Week\", \"col\": 3}}, {\"id\": \"ncFailed001\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Flow Failed Runs\", \"col\": 3}}, {\"id\": \"ncThumbs001\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Flow Thumbs Down\", \"col\": 3}}, {\"id\": \"ncAgents001\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Flow Enabled Agents\", \"col\": 3}}, {\"id\": \"chRuns00001\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Flow Runs Per Day\", \"col\": 12}}, {\"id\": \"flowManage1\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Manage</b></span>\", \"col\": 12}}, {\"id\": \"cardAgents1\", \"type\": \"card\", \"data\": {\"card_name\": \"Agents\", \"col\": 3}}, {\"id\": \"cardKnow001\", \"type\": \"card\", \"data\": {\"card_name\": \"Knowledge\", \"col\": 3}}, {\"id\": \"cardConvo01\", \"type\": \"card\", \"data\": {\"card_name\": \"Conversations\", \"col\": 3}}, {\"id\": \"cardConfig1\", \"type\": \"card\", \"data\": {\"card_name\": \"Configuration\", \"col\": 3}}]",
  "custom_blocks": [],
  "docstatus": 0,
  "doctype": "Workspace",
@@ -86,7 +91,7 @@
    "hidden": 0,
    "is_query_report": 0,
    "label": "Conversations",
-   "link_count": 2,
+   "link_count": 3,
    "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
@@ -108,6 +113,16 @@
    "link_count": 0,
    "link_to": "Flow Run",
    "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Flow Usage",
+   "link_count": 0,
+   "link_to": "Flow Usage",
+   "link_type": "Report",
    "onboard": 0,
    "type": "Link"
   },
@@ -164,7 +179,24 @@
  "modified_by": "Administrator",
  "module": "Flow",
  "name": "Flow",
- "number_cards": [],
+ "number_cards": [
+  {
+   "label": "Chats this week",
+   "number_card_name": "Flow Chats This Week"
+  },
+  {
+   "label": "Failed chat runs (7 days)",
+   "number_card_name": "Flow Failed Runs"
+  },
+  {
+   "label": "Thumbs down on chats (30 days)",
+   "number_card_name": "Flow Thumbs Down"
+  },
+  {
+   "label": "Enabled agents",
+   "number_card_name": "Flow Enabled Agents"
+  }
+ ],
  "owner": "Administrator",
  "parent_page": "",
  "public": 1,
