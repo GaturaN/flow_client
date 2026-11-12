@@ -14,10 +14,10 @@ const RAISED_SHADOW = "var(--shadow-lg, 0 4px 14px rgba(0, 0, 0, 0.18))";
 const CHAT_BUBBLE = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>`;
 
 export class ChatIcon {
-	constructor({ onOpen }) {
+	constructor({ onOpen, shortcutLabel }) {
 		this.panelIsOpen = false;
 		this.hiddenUntilRefresh = false;
-		this.root = this._buildRoot(onOpen);
+		this.root = this._buildRoot(onOpen, shortcutLabel);
 		document.body.appendChild(this.root);
 	}
 
@@ -36,7 +36,7 @@ export class ChatIcon {
 		this.root.style.display = visible ? "block" : "none";
 	}
 
-	_buildRoot(onOpen) {
+	_buildRoot(onOpen, shortcutLabel) {
 		const root = document.createElement("div");
 		root.className = "flow-chat-icon";
 		Object.assign(root.style, {
@@ -46,17 +46,17 @@ export class ChatIcon {
 			zIndex: String(ABOVE_PAGE_BELOW_DIALOGS),
 		});
 		const hideButton = this._buildHideButton();
-		root.append(this._buildOpenButton(onOpen), hideButton);
+		root.append(this._buildOpenButton(onOpen, shortcutLabel), hideButton);
 		this._revealOnHover(root, hideButton);
 		return root;
 	}
 
-	_buildOpenButton(onOpen) {
+	_buildOpenButton(onOpen, shortcutLabel) {
 		const button = document.createElement("button");
 		button.type = "button";
 		button.className = "flow-chat-icon-open";
 		button.innerHTML = CHAT_BUBBLE;
-		label(button, __("Chat with Flow (Ctrl+I)"));
+		label(button, __("Chat with Flow ({0})", [shortcutLabel]));
 		Object.assign(button.style, {
 			width: `${ICON_SIZE}px`,
 			height: `${ICON_SIZE}px`,

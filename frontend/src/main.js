@@ -7,6 +7,7 @@ import "@/index.css";
 
 const PANEL_WIDTH = 420;
 const MIN_WIDTH = 360;
+const PANEL_SHORTCUT = "ctrl+i";
 
 // Slide-in overlay panel injected into the Frappe desk. The Vue app (with real
 // frappe-ui components) mounts inside #flow-root; all bundle CSS is scoped to
@@ -118,7 +119,7 @@ class FlowPanel {
 
 	_registerShortcut() {
 		frappe.ui.keys.add_shortcut({
-			shortcut: "ctrl+i",
+			shortcut: PANEL_SHORTCUT,
 			action: () => this.toggle(),
 			description: __("Toggle Flow panel"),
 			ignore_inputs: true,
@@ -127,7 +128,10 @@ class FlowPanel {
 
 	_mountChatIcon() {
 		if (!frappe.boot.flow_show_chat_icon) return;
-		this.chatIcon = new ChatIcon({ onOpen: () => this.show() });
+		this.chatIcon = new ChatIcon({
+			onOpen: () => this.show(),
+			shortcutLabel: frappe.ui.keys.get_shortcut_label(PANEL_SHORTCUT),
+		});
 		this.chatIcon.setPanelOpen(this.visible);
 	}
 
