@@ -1,10 +1,14 @@
 # Copyright (c) 2026, Frappe Technologies and contributors
 # License: MIT. See LICENSE
 
+import os
+import re
 from unittest.mock import patch
 
 import frappe
+from frappe.core.doctype.navbar_settings.navbar_settings import sync_standard_items
 from frappe.installer import _delete_linked_documents
+from frappe.model.document import Document
 from frappe.tests import IntegrationTestCase
 
 from flow.assistant.assistant import ASSISTANT_AGENT_TITLE
@@ -14,6 +18,8 @@ from flow.chat_icon import USER_SWITCH, add_user_switch, chat_icon_state_for
 CLERK = "chat-icon-clerk@example.com"
 ALLOWED_AND_WANTED = {"allowed": True, "wanted": True}
 NOT_ALLOWED = {"allowed": False, "wanted": False}
+WAY_BACK_LABEL = "Show Flow chat icon"
+PANEL_METHOD_CALL = re.compile(r"frappe\.flow\??\.panel\??\.(\w+)(?:\?\.)?\(")
 
 
 class TestChatIconRule(IntegrationTestCase):
@@ -115,6 +121,58 @@ class TestUserSwitch(IntegrationTestCase):
 		_delete_linked_documents("Flow", {"Custom Field": "module"}, dry_run=False)
 
 		self.assertFalse(frappe.db.exists("Custom Field", {"dt": "User", "fieldname": USER_SWITCH}))
+
+
+class TestWayBackMenuItem(IntegrationTestCase):
+	def setUp(self):
+		frappe.db.delete("Navbar Item", {"parent": "Navbar Settings", "item_label": WAY_BACK_LABEL})
+
+	def tearDown(self):
+		frappe.db.rollback()
+
+	def test_every_migrate_puts_the_way_back_in_the_sidebar_menu(self):
+		sync_standard_items()
+
+		row = _way_back_row()
+		self.assertEqual((row.item_type, row.is_standard, row.icon), ("Action", 1, "message-circle"))
+
+	def test_every_migrate_keeps_a_single_way_back_row(self):
+		sync_standard_items()
+		sync_standard_items()
+
+		labels = [row.item_label for row in frappe.get_doc("Navbar Settings").settings_dropdown]
+		self.assertEqual(labels.count(WAY_BACK_LABEL), 1)
+
+	def test_install_puts_the_way_back_in_the_sidebar_menu(self):
+		self.assertIn(
+			"frappe.core.doctype.navbar_settings.navbar_settings.sync_standard_items",
+			frappe.get_hooks("after_install", app_name="flow"),
+		)
+
+	def test_an_older_flow_bundle_cannot_break_the_menu(self):
+		sync_standard_items()
+
+		self.assertNotRegex(_way_back_row().condition, r"\w\(")
+
+	def test_the_way_back_calls_only_what_the_panel_has(self):
+		sync_standard_items()
+		row = _way_back_row()
+		called = PANEL_METHOD_CALL.findall(row.condition + row.action)
+
+		self.assertEqual(called, ["isChatIconOff", "turnChatIconOn"])
+		for method in called:
+			self.assertIn(f"\n\t{method}() {{", _panel_source())
+
+
+def _way_back_row() -> Document:
+	rows = frappe.get_doc("Navbar Settings").settings_dropdown
+	return next(row for row in rows if row.item_label == WAY_BACK_LABEL)
+
+
+def _panel_source() -> str:
+	path = os.path.join(frappe.get_app_path("flow"), "..", "frontend", "src", "main.js")
+	with open(path) as source:
+		return source.read()
 
 
 def _make_desk_user(email: str) -> None:
