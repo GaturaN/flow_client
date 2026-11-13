@@ -1,4 +1,4 @@
-// Persists the panel's open/fullscreen/width/session across reloads.
+// Persists the panel's open state, layout and session across reloads.
 const KEY = "flow-panel-state";
 
 export function readPanelState() {

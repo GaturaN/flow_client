@@ -1,15 +1,17 @@
 <script setup>
-import { onMounted, onUnmounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import PanelHeader from "./components/PanelHeader.vue";
 import MessageList from "./components/MessageList.vue";
 import Composer from "./components/Composer.vue";
 import { useStore } from "./store";
+import { PANEL_PLACEMENTS } from "./lib/panelLayout";
 
 const props = defineProps({
 	onClose: { type: Function, default: null },
-	onToggleFullscreen: { type: Function, default: null },
+	onTogglePopOut: { type: Function, default: null },
 });
-const { loadInitial, scrollTick } = useStore();
+const { loadInitial, scrollTick, panelPlacement } = useStore();
+const frameDrawsBorder = computed(() => panelPlacement.value === PANEL_PLACEMENTS.FLOATING);
 
 const panel = ref(null);
 const composer = ref(null);
@@ -32,10 +34,11 @@ onUnmounted(() => observer?.disconnect());
 <template>
 	<div
 		ref="panel"
-		class="flow-panel relative flex h-full flex-col border-l border-outline-gray-2 bg-surface-white text-ink-gray-9"
+		class="flow-panel relative flex h-full flex-col bg-surface-white text-ink-gray-9"
+		:class="{ 'border-l border-outline-gray-2': !frameDrawsBorder }"
 	>
 		<PanelHeader
-			:on-toggle-fullscreen="props.onToggleFullscreen"
+			:on-toggle-pop-out="props.onTogglePopOut"
 			@close="props.onClose && props.onClose()"
 		/>
 		<MessageList />

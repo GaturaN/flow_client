@@ -14,6 +14,22 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  frontend-tests:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout flow
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Run the panel layout tests
+        run: yarn test
+
   tests:
     name: Server Tests
     runs-on: ubuntu-latest
